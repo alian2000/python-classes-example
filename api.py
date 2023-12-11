@@ -2,7 +2,7 @@ from flask import Flask,render_template, flash, redirect
 from flask_restful import Resource, Api, reqparse
 #https://www.blog.duomly.com/python-api-tutorial/
 
-app = Flask(__name__) # app variable is equal to instance of flask flask,__name__ is a special variable in python, just a name of the module
+app = Flask(__name__) # usama app variable is equal to instance of flask flask,__name__ is a special variable in python, just a name of the module
 api = Api(app)
 
 STUDENTS = {
