@@ -1,0 +1,37 @@
+import socket
+
+def client_program():
+    host = 'localhost'  # Server's hostname or IP address
+    port = 12345        # Server's port
+
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Create a TCP socket
+    client_socket.connect((host, port))  # Connect to the server
+
+    try:
+        # Authentication Process
+        username_prompt = client_socket.recv(1024).decode()
+        print(username_prompt, end='')  
+        username = input()  
+        client_socket.send(username.encode())
+
+        password_prompt = client_socket.recv(1024).decode()
+        print(password_prompt, end='')  
+        password = input()  
+        client_socket.send(password.encode())
+
+        # Receive authentication response
+        auth_response = client_socket.recv(1024).decode()
+        print(auth_response)
+
+        # If authentication is successful, receive additional data
+        if "successful" in auth_response:
+            data = client_socket.recv(1024).decode()
+            print(data)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        client_socket.close()  # Close the connection
+
+if __name__ == "__main__":
+    client_program()
