@@ -1,0 +1,40 @@
+import socket
+import hashlib
+
+# Store usernames and hashed passwords
+users = {'user1': hashlib.sha256('pass1'.encode()).hexdigest(), 'user2': hashlib.sha256('pass2'.encode()).hexdigest()}
+
+def handle_client(client_socket):
+    try:
+        client_socket.send(b'Username: ')
+        username = client_socket.recv(1024).decode().strip()
+        client_socket.send(b'Password: ')
+        password = client_socket.recv(1024).decode().strip()
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        if username in users and users[username] == hashed_password:
+            client_socket.send(b'Authentication successful!\n')
+            
+            # Send additional data after authentication
+            client_socket.send(b'Welcome! Here is your secured data: SecretMessage123\n')
+        else:
+            client_socket.send(b'Authentication failed!\n')
+        
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        client_socket.close()
+
+def start_server():
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(('localhost', 12345))  # Server listens on localhost and port 12345
+    server_socket.listen(5)
+    print("Server listening on port 12345...")
+
+    while True:
+        client_socket, addr = server_socket.accept()
+        print(f"Connection from {addr}")
+        handle_client(client_socket)
+
+if __name__ == "__main__":
+    start_server()
