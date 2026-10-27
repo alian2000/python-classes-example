@@ -1,0 +1,4 @@
+x="WALID"
+print(x.lower())
+z="USAma"
+print(z.upper())

@@ -1,0 +1,83 @@
+import secrets
+import urllib.request
+from flask import Flask, Response, request, render_template_string
+
+app = Flask(__name__)
+
+# Local user credentials (username: password)
+USERS = {
+    "admin": "admin123",
+    "user": "password",
+    "walid": "khalid",
+}
+
+def verify_credentials(username, password):
+    if not username or not password:
+        return False
+    expected_password = USERS.get(username)
+    if expected_password is None:
+        return False
+    return secrets.compare_digest(expected_password, password)
+
+@app.before_request
+def require_basic_auth():
+    auth = request.authorization
+    if not auth or not verify_credentials(auth.username, auth.password):
+        return Response(
+            "Access denied: Invalid credentials.\n",
+            401,
+            {"WWW-Authenticate": 'Basic realm="Login Required"'},
+        )
+
+HTML_TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h2>{{ title }}</h2>
+    <form method="post">
+        <input type="text" name="text" placeholder="Enter text" required>
+        <button type="submit">Convert</button>
+    </form>
+
+    {% if result %}
+        <h3>Result:</h3>
+        <p>{{ result }}</p>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def convert():
+    result = None
+    if request.method == "POST":
+        text = request.form["text"]
+        result = text.upper()   # Built-in Python function
+    return render_template_string(HTML_TEMPLATE, title="Lowercase to Uppercase Converter", result=result)
+
+@app.route("/lower", methods=["GET", "POST"])
+def convert_lower():
+    result = None
+    if request.method == "POST":
+        text = request.form["text"]
+        result = text.lower()
+    return render_template_string(HTML_TEMPLATE, title="Uppercase to Lowercase Converter", result=result)
+
+@app.route("/weather")
+def weather():
+    user_agent = request.headers.get("User-Agent", "curl")
+    req = urllib.request.Request("https://wttr.in/", headers={"User-Agent": user_agent})
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            content = resp.read()
+            content_type = resp.headers.get("Content-Type", "text/plain; charset=utf-8")
+            return Response(content, content_type=content_type)
+    except Exception as e:
+        return Response(f"Error fetching weather: {e}\n", status=502, mimetype="text/plain")
+
+if __name__ == "__main__":
+    #app.run(debug=True)
+    app.run(debug=True, host='192.168.86.26', port=5000)

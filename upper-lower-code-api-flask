@@ -1,0 +1,44 @@
+from flask import Flask, request, render_template_string
+
+app = Flask(__name__)
+
+HTML_TEMPLATE = """
+<!doctype html>
+<html>
+<head>
+    <title>{{ title }}</title>
+</head>
+<body>
+    <h2>{{ title }}</h2>
+    <form method="post">
+        <input type="text" name="text" placeholder="Enter text" required>
+        <button type="submit">Convert</button>
+    </form>
+
+    {% if result %}
+        <h3>Result:</h3>
+        <p>{{ result }}</p>
+    {% endif %}
+</body>
+</html>
+"""
+
+@app.route("/", methods=["GET", "POST"])
+def convert():
+    result = None
+    if request.method == "POST":
+        text = request.form["text"]
+        result = text.upper()   # Built-in Python function
+    return render_template_string(HTML_TEMPLATE, title="Lowercase to Uppercase Converter", result=result)
+
+@app.route("/lower", methods=["GET", "POST"])
+def convert_lower():
+    result = None
+    if request.method == "POST":
+        text = request.form["text"]
+        result = text.lower()
+    return render_template_string(HTML_TEMPLATE, title="Uppercase to Lowercase Converter", result=result)
+
+if __name__ == "__main__":
+    #app.run(debug=True)
+    app.run(debug=True, host='192.168.86.26', port=5000)
